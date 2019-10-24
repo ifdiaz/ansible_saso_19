@@ -1,0 +1,19 @@
+command_list:
+  - ls -al
+  - pwd
+
+users:
+- manolo:
+  username: "manolo"
+  home: "/home/manolo"
+  group: "users"
+  secondary_groups:
+    - sudo
+    - adm
+- jose:
+  username: "jose"
+  home: "/home/jose"
+  group: "users"
+  secondary_groups:
+    - sudo
+    - adm

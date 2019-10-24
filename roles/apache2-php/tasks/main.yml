@@ -1,0 +1,52 @@
+---
+# tasks file for apache2-php
+- name: Install required packages
+  apt: 
+    name: "{{ packages_lamp }}"
+    state: present
+
+- name: Enable apache modules  
+  apache2_module:
+      name: "{{ item1 }}"
+      state: present 
+  loop: 
+    "{{ apache_modules }}"
+  loop_control: 
+    loop_var: item1
+
+- name: Create directories for websites
+  file:
+      path: "{{ item1.value.documentroot }}"
+      state: directory
+  loop: "{{ lookup('dict', apache_vhosts, wantlist=True) }}"
+  loop_control: 
+    loop_var: item1
+
+- name: Install websites
+  synchronize:
+      src: "{{ item1.value.localfiles }}"
+      dest: "{{ item1.value.documentroot }}"
+      dirs: yes
+      mode: push
+  loop: "{{ lookup('dict', apache_vhosts, wantlist=True) }}"
+  loop_control: 
+    loop_var: item1
+
+- name: Disable apache default site configuration
+  shell: a2dissite 000-default
+
+- name: Create configuration
+  template: 
+    src: vhosts.conf.j2
+    dest: "{{ apache_default_siteconfig }}"
+
+- name: Disable apache default site configuration
+  shell: a2ensite 000-default
+
+- name: Restart servers
+  service:
+      name: "{{ item1 }}"
+      state: restarted
+  loop: "{{ services }}"
+  loop_control: 
+    loop_var: item1  

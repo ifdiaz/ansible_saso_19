@@ -1,0 +1,30 @@
+---
+- hosts: all
+  tasks:
+   - name: Load data
+     include_vars:
+         file: var_mon.yml
+
+   - name: create users
+     user:
+         name: "{{ item.username}}"
+         groups: "{{ item.secondary_groups|join(', ') }}"
+         home: "{{ item.home }}"
+         group: "{{ item.group }}"
+         state: present
+     loop: "{{ users }}"
+
+   - name: Execute several commands
+     shell: "{{ item }}"
+     loop: "{{ command_list }}"
+     register: aa
+  
+   - name: Show results
+     debug:
+        msg: "{{ aa }}"
+        #var: aa
+
+   - name: Show results partially
+     debug:
+        msg: "{{ item.stdout }}"
+     loop: "{{ aa.results }}"

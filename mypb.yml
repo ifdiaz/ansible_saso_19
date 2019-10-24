@@ -1,0 +1,11 @@
+---
+- hosts: all
+  tasks: 
+  - name: Install required software
+    apt: 
+      name:
+       - vim
+       - zip
+      state: latest
+  - name: Echoing Hello World
+    shell: echo "Hola mundo"

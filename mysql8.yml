@@ -1,0 +1,32 @@
+---
+- hosts: all
+  tasks: 
+  - name: instalar wget, lsb-release y gnupg
+    apt: 
+      name:
+       - wget
+       - lsb-release 
+       - gnupg
+       - rsync
+      state: present
+
+  - name: copiar fichero debconf-mysql
+    synchronize:
+      src: debconf-mysql
+      dest: /root
+      recursive: no
+      mode: push
+
+  - name: ejecutar comando debconf con su configuracion
+    shell: debconf-set-selections < /root/debconf-mysql
+
+  - name: descargar e instalar mysql-apt-config
+    apt:
+      deb: http://repo.mysql.com/mysql-apt-config_0.8.13-1_all.deb
+      state: present
+      
+  - name: instalar mysql-community-server
+    apt: 
+      name: mysql-community-server
+      state: present
+      update_cache: yes

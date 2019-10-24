@@ -1,0 +1,66 @@
+---
+- hosts: all
+
+  vars:
+    apache_vhosts:
+      - {servername: "www.domain.tld", documentroot: "/var/www/domain"}
+
+    package: 
+      - apache2
+      - mariadb-server
+      - mariadb-client
+      - php 
+      - libapache2-mod-php 
+      - php-mysql
+      - python-mysqldb
+
+    mariadb_users:
+      - {name: myapp, password: mypass, priv: '*.*:ALL,GRANT'}
+
+  tasks: 
+  - name: instalar apache, mariabd, php (y python-mysqldb para modulo mysql_user)
+    apt: 
+      name: "{{ package }}"
+      state: present
+
+  - name: crear usuario en maria db
+    mysql_user:
+      name: "{{ item.name }}"
+      password: "{{ item.password }}"
+      priv: "{{ item.priv }}"
+      state: present
+    loop:
+      "{{ mariadb_users }}"
+      
+  - name: habilitar modulo php
+    apache2_module:
+      state: present
+      name: php7
+
+  - name: crear directorio del dominio
+    file:
+      path: /var/www/domain/
+      state: directory
+
+  - name: copiar fichero index.php con permisos 644 (necesita rsync instalado)
+    synchronize:
+      src: index.php
+      dest: /var/www/domain/index.php
+      recursive: no
+      mode: push
+      rsync_opts: --chmod=644
+
+  - name: escribir el archivo de configuracion VirtualHosts de apache
+    template: src=vhosts.conf.j2 dest=/etc/apache2/sites-available/vhosts.conf
+
+  - name: activar los servidores web definidos en el archivo vhosts
+    shell: a2ensite vhosts.conf
+
+  - name: reiniciar apache, maria db y mysql
+    service: 
+      name: "{{ item }}" 
+      state: restarted
+    loop:
+     - apache2
+     - mariadb
+     - mysql

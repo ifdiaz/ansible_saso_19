@@ -1,0 +1,7 @@
+nodo1 ansible_ssh_host=192.168.1.10 ansible_ssh_user=user ansible_become=yes 
+#ansible_become_pass=user
+
+#[webservers]
+#webserver1
+
+#this is my hosts file
